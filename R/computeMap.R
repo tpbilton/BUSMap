@@ -28,7 +28,7 @@
 #' @param alt Non-negative integer matrix containing the read counts for the alternate allele
 #' @param OPGP Integer vector specifying the OPGPs 
 #' @param initval List giving the starting values for the MH algorithm value
-#' @param iter Integer value of the total number of iterations in the MH algorithm for each chain
+#' @param iter Integer value of the number of iterations in the MH algorithm (excluding burn-in period) for each chain
 #' @param burnin Integer value of the number of interations in the burn-in/adaptive phase of the MH algorithm for each chain
 #' @param chains Integer value giving the number of parallel chains to use  
 #' @param seed Numeric value giving the seed.
@@ -59,17 +59,15 @@ computeMap <- function(ref, alt, OPGP, initval=NULL, iter=30000, burnin=5000, ch
     stop("The dimension of the matrix for the reference reads is not the same the dimension of the matrix for alternate reads")
   if(!is.vector(OPGP) || any(is.na(OPGP)) || !is.integer(OPGP) || OPGP < 1 || OPGP > 12)
     stop("Argument `OPGP` is invalid")
-  if(!is.vector(startVal) || any(is.na(startVal)) || !is.numeric(startVal) || !is.finite(startVal))
-    stop("Argument `OPGP` is invalid")
   if(!is.numeric(iter) || length(iter) != 1 || iter != round(iter) || iter < 1 || !is.finite(iter))
     stop("Argument `iter` is invalid")
-  if(!is.numeric(burnin) || length(burnin) != 1 || burnin != round(burnin) || burnin < 1 || burnin > (iter-1))
+  if(!is.numeric(burnin) || length(burnin) != 1 || burnin != round(burnin) || burnin < 1 || !is.finite(burnin))
     stop("Argument `burnin` is invalid")
   if(!is.numeric(chains) || length(chains) != 1 || chains != round(chains) || chains < 1 || !is.finite(chains))
     stop("Argument `iter` is invalid")
   
   if(is.null(initval))
-    startVal <- replicate(nchain, c(rnorm(nSnps-1,-5,1), rnorm(nSnps,-5,0.8),
+    startVal <- replicate(chains, c(rnorm(nSnps-1,-5,1), rnorm(nSnps,-5,0.8),
                                     rnorm(1,-5,1),rnorm(1,-5,0.8),rlnorm(1, sdlog=0.5),rlnorm(1, sdlog=0.5)), simplify=F)
   else if(!is.list(initval) || length(initval) != chains || all(lapply(initval, length) == (2*nSnps+3)))
     stop("Argument `initval` is invalid")
@@ -77,7 +75,13 @@ computeMap <- function(ref, alt, OPGP, initval=NULL, iter=30000, burnin=5000, ch
   ## run the MH algorithm
   doParallel::registerDoParallel(chains)
   out <- foreach::foreach(chain = 1:chains) %dopar% {
-    MH_Bayes_Hir(ref, alt, OPGP, nInd, nSnps, startVal[[chain]], para, seed+13*chain)
+    MH_Bayes_Hir(ref, alt, OPGP, nInd, nSnps, startVal[[chain]], c(burnin,iter), seed+13*chain)
   }
+  out <- lapply(out, function(x) {
+    y = x
+    colnames(y) = c(paste0("\u03C1",1:(nSnps-1)),paste0("\u03B5",1:nSnps),
+                    paste0("\u03BC",1:2),paste0("\u03C3",1:2))
+    return(y)
+  })
   return(out)
 }
