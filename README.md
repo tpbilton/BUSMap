@@ -36,7 +36,7 @@ iter = 25000 # number of iterations (excluding burn-in)
 nchain = 3   # number of chains
 
 ## Construct the linkage map using Bayeisan hierarchical HMM
-est <- computeMap(ref, alt, OPGP, iter=iter, burn=burnin, chains=nchain)
+est <- computeMap(ref, alt, OPGP, iter=iter, burnin=burn, chains=nchain)
 str(est)
 ```
 The output is a list of matrices of the posterior samples. Each list is samples from one Markov chain, the rows of each matrix represent the iterations in the MH algorithm and the columns represent the parameters.  
