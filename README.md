@@ -25,10 +25,10 @@ The data can be loaded using the following code:
 data(manuka)         # load data in BUSMap   
 ref <- manuka$ref    # matrix of reference read counts 
 alt <- manuka$alt    # matrix of alternate read counts
-OPGP <- manuka$OPGP  # Vector of OPGPs
+parHap <- parHap     # Matrix of parental haplotypes
 ```
 
-A linkage map can be computed via the Bayesian hierarchical HMM using the `computeMap` function:
+A linkage map can be computed via the Bayesian hierarchical HMM using the `computeMapSeq` function:
 ```
 ## Simulation parameters
 burn = 5000  # burn-in period
@@ -36,10 +36,10 @@ iter = 25000 # number of iterations (excluding burn-in)
 nchain = 3   # number of chains
 
 ## Construct the linkage map using Bayeisan hierarchical HMM
-est <- computeMap(ref, alt, OPGP, iter=iter, burnin=burn, chains=nchain)
+est <- computeMapSeq(ref, alt, parHap, iter=iter, burnin=burn, chains=nchain)
 str(est)
 ```
-The output is a list of matrices of the posterior samples. Each list is samples from one Markov chain, the rows of each matrix represent the iterations in the MH algorithm and the columns represent the parameters.  
+The output is a list of matrices of the posterior samples. Each list is samples from one chain, the rows of each matrix represent the iterations in the MH algorithm and the columns represent the parameters.  
 
 ### Citation:
 Bilton, T.P., Schofield, M.R., Black, M.A., Chagn&#233;, D., Wilcox, P.L., & Dodds, K.G. (2018). Accounting for errors in low coverage high-throughput sequencing data when constructing genetic maps using biparental outcrossed populations. *Genetics*, *209*(1), 65--76. doi:[10.1534/genetics.117.300627](http://www.genetics.org/content/209/1/65) 

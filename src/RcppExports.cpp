@@ -5,9 +5,9 @@
 
 using namespace Rcpp;
 
-// MH_Bayes_Hir
-NumericMatrix MH_Bayes_Hir(IntegerMatrix ref, IntegerMatrix alt, IntegerVector OPGP, int nInd, int nSnps, NumericVector startVal, IntegerVector simPar, unsigned seed);
-RcppExport SEXP _BUSMap_MH_Bayes_Hir(SEXP refSEXP, SEXP altSEXP, SEXP OPGPSEXP, SEXP nIndSEXP, SEXP nSnpsSEXP, SEXP startValSEXP, SEXP simParSEXP, SEXP seedSEXP) {
+// MH_Bayes_Hir_seq
+NumericMatrix MH_Bayes_Hir_seq(IntegerMatrix ref, IntegerMatrix alt, IntegerVector OPGP, int nInd, int nSnps, NumericVector startVal, IntegerVector simPar, unsigned seed);
+RcppExport SEXP _BUSMap_MH_Bayes_Hir_seq(SEXP refSEXP, SEXP altSEXP, SEXP OPGPSEXP, SEXP nIndSEXP, SEXP nSnpsSEXP, SEXP startValSEXP, SEXP simParSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -19,13 +19,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type startVal(startValSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type simPar(simParSEXP);
     Rcpp::traits::input_parameter< unsigned >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(MH_Bayes_Hir(ref, alt, OPGP, nInd, nSnps, startVal, simPar, seed));
+    rcpp_result_gen = Rcpp::wrap(MH_Bayes_Hir_seq(ref, alt, OPGP, nInd, nSnps, startVal, simPar, seed));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_BUSMap_MH_Bayes_Hir", (DL_FUNC) &_BUSMap_MH_Bayes_Hir, 8},
+    {"_BUSMap_MH_Bayes_Hir_seq", (DL_FUNC) &_BUSMap_MH_Bayes_Hir_seq, 8},
     {NULL, NULL, 0}
 };
 

@@ -195,8 +195,8 @@ double pdist_log_cloglog_jeff(double x){
 
 
 // [[Rcpp::export]]
-NumericMatrix MH_Bayes_Hir(IntegerMatrix ref, IntegerMatrix alt, IntegerVector OPGP, int nInd, int nSnps, 
-                           NumericVector startVal, IntegerVector simPar, unsigned seed){
+NumericMatrix MH_Bayes_Hir_seq(IntegerMatrix ref, IntegerMatrix alt, IntegerVector OPGP, int nInd, int nSnps, 
+                               NumericVector startVal, IntegerVector simPar, unsigned seed){
   
   // Extract simulation paramters
   int nadapt = simPar[0];

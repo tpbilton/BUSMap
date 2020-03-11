@@ -1,6 +1,6 @@
 ##########################################################################
 # Bayesian genotyping Uncertainty with Sequencing data and linkage MAPping (BUSMap)
-# Copyright 2019 Timothy P. Bilton <tbilton@maths.otago.ac.nz>
+# Copyright 2019-2020 Timothy P. Bilton <timothy.bilton@agresearch.co.nz>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,40 +15,52 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-#' Construct linkage map using a Bayesian hierarchical hidden Markov model (HMM)
+#' Construct a linkage map using high-throughput sequencing data
 #' 
-#' Function that implements the Metropolis-Hastings (MH) algorithm for obtaining posterior samples 
+#' Function that implements a Metropolis-Hastings (MH) algorithm for obtaining posterior samples 
 #' of the Bayesian hierarchical hidden Markov model (HMM) for linkage maps in full-sib families 
-#' with high-throughput sequencing data.
+#' with high-throughput sequencing data. Note that this function only constructs a linkage map for a single chromsome.
+#' 
+#' The \code{parhap} argument must be a matrix (4 rows and \eqn{M} columns, where \eqn{M} is the number of SNPs) containing the haplotypes for the parents. The entries 
+#' of this matrix can be anything but there must be excatly two unique entires, one to denote the reference allele and
+#' one to denote the alternate allele. The first two rows specify the haplotypes for the maternal parent and the third and
+#' fourth rows specify the haplotypes for the paternal parent. See examples for one way to specify this matrix.
+#' 
+#' The \code{code} argument allows for reproducibility and specifies the starting seed to when simulating random
+#' values in the function. 
+#' 
+#' The \code{initval} allows initial values for each chain to be specified. This must a list of vectors (each with length \eqn{2M+3}) with the number of elements
+#' in the list being equal to the number of chains specified by \code{chains}. This argument should only be used by experienced users.  
 #' 
 #' @usage
-#' computeMap(ref, alt, OPGP, initval=NULL, iter=30000, burnin=5000, chains=3, seed=1, cores=chains)
+#' computeMapSeq(ref, alt, OPGP, iter=30000, burnin=5000, chains=3, seed=1, cores=chains, initval=NULL)
 #' 
 #' @param ref Non-negative integer matrix containing the read counts for the reference allele
 #' @param alt Non-negative integer matrix containing the read counts for the alternate allele
-#' @param OPGP Integer vector specifying the OPGPs 
-#' @param initval List giving the starting values for the MH algorithm value
+#' @param parhap Matrix of parental haplotypes
 #' @param iter Integer value of the number of iterations in the MH algorithm (excluding burn-in period) for each chain
 #' @param burnin Integer value of the number of interations in the burn-in/adaptive phase of the MH algorithm for each chain
 #' @param chains Integer value giving the number of parallel chains to use  
 #' @param seed Numeric value giving the seed.
 #' @param cores Integer value giving the number of cores for parallelization of the MH chains.
+#' @param initval List giving the starting values for the MH algorithm value
 #' Must be non-negative and no more than \code{chains}. 
 #' 
-#' @name computeMap
+#' @name computeMapSeq
 #' @author Timothy P. Bilton
 #' @examples
 #' 
+#' #### Load Manuka data from Bilton et al., (2018)
 #' data(manuka)
-#' ref <- manuka$ref
-#' alt <- manuka$alt
-#' OPGP <- manuka$OPGP
+#' ref <- manuka$ref       # matrix of reference allele counts
+#' alt <- manuka$alt       # matrix of alternate allele counts
+#' parHap <- manuka$parHap # Matrix of parental haplotypes
 #' 
-#' computeMap(ref, alt, OPGP)
+#' computeMapSeq(ref, alt, parHap)
 #'
-#' @export computeMap
-computeMap <- function(ref, alt, OPGP, initval=NULL, iter=30000, burnin=5000, chains=3, seed=1, cores=chains){
-  ## Do some check
+#' @export computeMapSD
+computeMapSeq <- function(ref, alt, parhap, iter=30000, burnin=5000, chains=3, seed=1, cores=chains, initval=NULL){
+  ## Do some checks
   if(!is.matrix(ref) || !is.numeric(ref) || any(is.na(ref)) || any(ref != round(ref)) || any(ref < 0))
     stop("Argument `ref` is invalid")
   if(!is.matrix(alt) || !is.numeric(alt) || any(is.na(alt)) || any(alt != round(alt)) || any(alt < 0))
@@ -57,8 +69,12 @@ computeMap <- function(ref, alt, OPGP, initval=NULL, iter=30000, burnin=5000, ch
   nSnps <- ncol(ref)
   if(nInd != nrow(alt) || nSnps != ncol(alt))
     stop("The dimension of the matrix for the reference reads is not the same the dimension of the matrix for alternate reads")
-  if(!is.vector(OPGP) || any(is.na(OPGP)) || !is.integer(OPGP) || OPGP < 1 || OPGP > 12)
-    stop("Argument `OPGP` is invalid")
+  if(!is.matrix(parhap) || nrow(parhap) != 4 || ncol(parhap) != nSnps || any(is.na(parhap)) || length(unique(as.vector(parhap))) != 2)
+    stop("Argument `parhap` is invalid")
+  alleles <- unique(as.vector(parhap))
+  major = alleles[1]
+  minor = alleles[2]
+  OPGP = parHapToOPGP(parhap, major=major, minor=minor)
   if(!is.numeric(iter) || length(iter) != 1 || iter != round(iter) || iter < 1 || !is.finite(iter))
     stop("Argument `iter` is invalid")
   if(!is.numeric(burnin) || length(burnin) != 1 || burnin != round(burnin) || burnin < 1 || !is.finite(burnin))
@@ -66,16 +82,18 @@ computeMap <- function(ref, alt, OPGP, initval=NULL, iter=30000, burnin=5000, ch
   if(!is.numeric(chains) || length(chains) != 1 || chains != round(chains) || chains < 1 || !is.finite(chains))
     stop("Argument `iter` is invalid")
   
-  if(is.null(initval))
+  if(is.null(initval)){
+    set.seed(seed)
     startVal <- replicate(chains, c(rnorm(nSnps-1,-5,1), rnorm(nSnps,-5,0.8),
                                     rnorm(1,-5,1),rnorm(1,-5,0.8),rlnorm(1, sdlog=0.5),rlnorm(1, sdlog=0.5)), simplify=F)
+  }
   else if(!is.list(initval) || length(initval) != chains || all(lapply(initval, length) == (2*nSnps+3)))
     stop("Argument `initval` is invalid")
   else startVal = initval
   ## run the MH algorithm
   doParallel::registerDoParallel(chains)
   out <- foreach::foreach(chain = 1:chains) %dopar% {
-    MH_Bayes_Hir(ref, alt, OPGP, nInd, nSnps, startVal[[chain]], c(burnin,iter), seed+13*chain)
+    MH_Bayes_Hir_seq(ref, alt, OPGP, nInd, nSnps, startVal[[chain]], c(burnin,iter), seed*2+13*chain)
   }
   out <- lapply(out, function(x) {
     y = x
@@ -83,5 +101,6 @@ computeMap <- function(ref, alt, OPGP, initval=NULL, iter=30000, burnin=5000, ch
                     paste0("\u03BC",1:2),paste0("\u03C3",1:2))
     return(y)
   })
+  names(out) <- paste0("chain",1:length(out))
   return(out)
 }

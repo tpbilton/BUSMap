@@ -1,13 +1,13 @@
 Package: BUSMap
 Type: Package
 Title: Bayesian genotyping Uncertainty with Sequencing data for linkage Mapping (BUSMap)
-Authors@R: person("Timothy P.", "Bilton", role = c("aut", "cre"), email = "tbilton@maths.otago.ac.nz")
+Authors@R: person("Timothy P.", "Bilton", role = c("aut", "cre"), email = "timothy.bilton@agresearch.co.nz")
 Version: 0.1.0
-Date: 2019-11-29
+Date: 2020-03-11
 Author: Timothy P. Bilton [aut, cre]
-Maintainer: Timothy P. Bilton <tbilton@maths.otago.ac.nz>
+Maintainer: Timothy P. Bilton <timothy.bilton@agresearch.co.nz>
 Description: Package for constructing linkage maps using a Bayesian hierarchical hidden Markov model (HMM) in full-sib populations to obtain estimates of genetic map distances and associated uncertainty intervals.
 License: GPL-3 | file LICENSE
 Imports: Rcpp (>= 1.0.0), doParallel, foreach, parallel
 LinkingTo: Rcpp
-RoxygenNote: 7.0.1
+RoxygenNote: 7.0.2
