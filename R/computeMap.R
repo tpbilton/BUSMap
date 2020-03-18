@@ -91,7 +91,7 @@ computeMapSeq <- function(ref, alt, parhap, iter=30000, burnin=5000, chains=3, s
     stop("Argument `initval` is invalid")
   else startVal = initval
   ## run the MH algorithm
-  doParallel::registerDoParallel(cores)
+  doParallel::registerDoParallel(cores=cores)
   out <- foreach::foreach(chain = 1:chains) %dopar% {
     MH_Bayes_Hir_seq(ref, alt, OPGP, nInd, nSnps, startVal[[chain]], c(burnin,iter), seed*2+13*chain)
   }
