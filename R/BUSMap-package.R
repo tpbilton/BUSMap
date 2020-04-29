@@ -1,6 +1,6 @@
 ##########################################################################
 # Bayesian genotyping Uncertainty with Sequencing data and linkage MAPping (BUSMap)
-# Copyright 2019 Timothy P. Bilton <tbilton@maths.otago.ac.nz>
+# Copyright 2019-2020 Timothy P. Bilton <timothy.bilton@agresearch.co.nz>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,12 +22,15 @@
 #' in full-sib populations to obtain estimates of genetic map distances and associated uncertainty intervals.
 #'
 #' \tabular{ll}{ Package: \tab BUSMap\cr Type: \tab Package\cr Version: \tab
-#' 0.1.0\cr Date: \tab 2019-11-29\cr License: \tab GPL 3\cr }
+#' 0.2.0\cr Date: \tab 2020-04-29\cr License: \tab GPL 3\cr }
 #'
 #' @name BUSMap-package
 #' @aliases BUSMap
 #' @docType package
 #' @author Timothy P. Bilton, Maintainer: Timothy P. Bilton
-#' <tbilton@@maths.otago.ac.nz>
+#' <timothy.bilton@agresearch.co.nz>
 #' @keywords package
+#' @importFrom foreach %dopar%
+#' @useDynLib BUSMap
+#' @importFrom Rcpp sourceCpp
 NULL

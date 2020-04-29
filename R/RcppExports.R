@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 MH_Bayes_Hir_seq <- function(ref, alt, OPGP, nInd, nSnps, startVal, simPar, seed) {
-    .Call(`_BUSMap_MH_Bayes_Hir_seq`, ref, alt, OPGP, nInd, nSnps, startVal, simPar, seed)
+    .Call('_BUSMap_MH_Bayes_Hir_seq', PACKAGE = 'BUSMap', ref, alt, OPGP, nInd, nSnps, startVal, simPar, seed)
 }
 
